@@ -3,11 +3,11 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.saasquatch</groupId>
-  <artifactId>future-waiter</artifactId>
+  <artifactId>legacy-future-adapter</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
-  <name>future-waiter</name>
+  <name>legacy-future-adapter</name>
   <url>TODO</url>
   <inceptionYear>2020</inceptionYear>
   <licenses>
