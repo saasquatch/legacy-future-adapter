@@ -12,16 +12,17 @@ import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 
 public final class LegacyFutureAdapter implements Closeable {
 
   private Thread eventLoopThread;
+  private LegacyFutureAdapterState state = LegacyFutureAdapterState.CREATED;
+  private final ReadWriteLock stateLock = new ReentrantReadWriteLock();
   private final BlockingQueue<FutureHolder<?>> futureHolders = new LinkedBlockingQueue<>();
-  private final AtomicReference<LegacyFutureAdapterState> stateRef =
-      new AtomicReference<>(LegacyFutureAdapterState.CREATED);
   // 0 means no timeout
   private final long defaultTimeoutNanos;
   private final ThreadFactory eventLoopThreadFactory;
@@ -36,19 +37,29 @@ public final class LegacyFutureAdapter implements Closeable {
   }
 
   public void start() {
-    if (!stateRef.compareAndSet(LegacyFutureAdapterState.CREATED,
-        LegacyFutureAdapterState.STARTED)) {
-      throw new IllegalStateException("Invalid state: " + stateRef.get());
+    stateLock.writeLock().lock();
+    try {
+      if (state != LegacyFutureAdapterState.CREATED) {
+        throw new IllegalStateException("Invalid state: " + state);
+      }
+      state = LegacyFutureAdapterState.STARTED;
+      eventLoopThread = eventLoopThreadFactory.newThread(this::doEventLoop);
+      eventLoopThread.start();
+    } finally {
+      stateLock.writeLock().unlock();
     }
-    eventLoopThread = eventLoopThreadFactory.newThread(this::doEventLoop);
-    eventLoopThread.start();
   }
 
   @Override
   public void close() {
-    stateRef.set(LegacyFutureAdapterState.STOPPED);
-    if (eventLoopThread != null) {
-      eventLoopThread.interrupt();
+    stateLock.writeLock().lock();
+    try {
+      state = LegacyFutureAdapterState.STOPPED;
+      if (eventLoopThread != null) {
+        eventLoopThread.interrupt();
+      }
+    } finally {
+      stateLock.writeLock().unlock();
     }
   }
 
@@ -71,13 +82,20 @@ public final class LegacyFutureAdapter implements Closeable {
     return Collections.unmodifiableList(futures);
   }
 
+  private LegacyFutureAdapterState getCurrentState() {
+    stateLock.readLock().lock();
+    try {
+      return state;
+    } finally {
+      stateLock.readLock().unlock();
+    }
+  }
+
   private <T> CompletableFuture<T> toCf(Future<T> f, long timeoutNanos) {
     Objects.requireNonNull(f);
-    if (stateRef.get() != LegacyFutureAdapterState.STARTED) {
-      throw new IllegalStateException("Invalid state: " + stateRef.get());
-    }
-    if (f instanceof CompletableFuture) {
-      return (CompletableFuture<T>) f;
+    final LegacyFutureAdapterState currentState = getCurrentState();
+    if (currentState != LegacyFutureAdapterState.STARTED) {
+      throw new IllegalStateException("Invalid state: " + currentState);
     }
     final CompletableFuture<T> cf = new CompletableFuture<>();
     if (!potentiallyCompleteFuture(f, cf, 0, 0)) {
@@ -87,7 +105,7 @@ public final class LegacyFutureAdapter implements Closeable {
   }
 
   private void doEventLoop() {
-    while (stateRef.get() == LegacyFutureAdapterState.STARTED) {
+    while (getCurrentState() == LegacyFutureAdapterState.STARTED) {
       doSingleLoop();
     }
   }
