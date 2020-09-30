@@ -76,6 +76,9 @@ public final class LegacyFutureAdapter implements Closeable {
    * {@link Future} does not complete within the given timeout, then the result
    * {@link CompletableFuture} will complete exceptionally with a {@link TimeoutException}.
    *
+   * @param timeout The timeout to be applied. It has to be between 1 nanosecond and
+   *        {@link Long#MAX_VALUE} nanoseconds.
+   *
    * @see #toCompletableFuture(Future)
    */
   public <T> CompletableFuture<T> toCompletableFuture(@Nonnull Future<T> f,
