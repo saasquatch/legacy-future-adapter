@@ -2,7 +2,10 @@ package com.saasquatch.legacyfutureadapter;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -74,6 +77,23 @@ public class TestBasic {
       adaptedFuture = adapter2.toCompletableFuture(settableFuture);
     }
     assertThrows(TimeoutException.class, () -> adaptedFuture.get(60, TimeUnit.MILLISECONDS));
+  }
+
+  @Test
+  public void testTimeout() {
+    try (LegacyFutureAdapter adapter2 = LegacyFutureAdapter.newBuilder().build()) {
+      adapter2.start();
+      final CompletableFuture<Object> cf =
+          adapter2.toCompletableFuture(SettableFuture.create(), Duration.ofMillis(100));
+      try {
+        cf.get(200, TimeUnit.MILLISECONDS);
+        fail();
+      } catch (ExecutionException e) {
+        assertTrue(e.getCause() instanceof TimeoutException);
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    }
   }
 
 }
