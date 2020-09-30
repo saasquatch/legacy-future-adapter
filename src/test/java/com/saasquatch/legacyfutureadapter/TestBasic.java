@@ -2,8 +2,10 @@ package com.saasquatch.legacyfutureadapter;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -11,6 +13,7 @@ import java.util.concurrent.TimeoutException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 
@@ -46,6 +49,23 @@ public class TestBasic {
     final CompletableFuture<Boolean> adaptedFuture =
         legacyFutureAdapter.toCompletableFuture(neverFuture);
     assertThrows(TimeoutException.class, () -> adaptedFuture.get(100, TimeUnit.MILLISECONDS));
+  }
+
+  @Test
+  public void testFailedFutures() {
+    final CompletableFuture<Object> npeFuture = legacyFutureAdapter
+        .toCompletableFuture(Futures.immediateFailedFuture(new NullPointerException()));
+    try {
+      npeFuture.get(10, TimeUnit.MILLISECONDS);
+      fail();
+    } catch (ExecutionException e) {
+      assertTrue(e.getCause() instanceof NullPointerException);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+    final CompletableFuture<Object> cancelledFuture =
+        legacyFutureAdapter.toCompletableFuture(Futures.immediateCancelledFuture());
+    assertTrue(cancelledFuture.isCancelled());
   }
 
 }
