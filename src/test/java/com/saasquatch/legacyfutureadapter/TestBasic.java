@@ -21,7 +21,8 @@ public class TestBasic {
   @BeforeAll
   public static void beforeAll() {
     threadPool = Executors.newCachedThreadPool();
-    legacyFutureAdapter = LegacyFutureAdapter.newBuilder().build();
+    legacyFutureAdapter = LegacyFutureAdapter.newBuilder()
+        .setEventLoopThreadFactory(Executors.defaultThreadFactory()).build();
     legacyFutureAdapter.start();
   }
 

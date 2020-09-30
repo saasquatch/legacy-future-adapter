@@ -23,12 +23,9 @@ public final class LegacyFutureAdapter implements Closeable {
   private LegacyFutureAdapterState state = LegacyFutureAdapterState.CREATED;
   private final ReadWriteLock stateLock = new ReentrantReadWriteLock();
   private final BlockingQueue<FutureHolder<?>> futureHolders = new LinkedBlockingQueue<>();
-  // 0 means no timeout
-  private final long defaultTimeoutNanos;
   private final ThreadFactory eventLoopThreadFactory;
 
-  LegacyFutureAdapter(long defaultTimeoutNanos, ThreadFactory eventLoopThreadFactory) {
-    this.defaultTimeoutNanos = defaultTimeoutNanos;
+  LegacyFutureAdapter(ThreadFactory eventLoopThreadFactory) {
     this.eventLoopThreadFactory = eventLoopThreadFactory;
   }
 
@@ -76,10 +73,9 @@ public final class LegacyFutureAdapter implements Closeable {
     return toCf(f, nanos);
   }
 
-  public List<Future<?>> getQueuedFutures() {
-    final List<Future<Object>> futures =
-        futureHolders.stream().map(futureHolder -> futureHolder.f).collect(Collectors.toList());
-    return Collections.unmodifiableList(futures);
+  public List<Future<Object>> getQueuedFutures() {
+    return futureHolders.stream().map(futureHolder -> futureHolder.f)
+        .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
   }
 
   private LegacyFutureAdapterState getCurrentState() {
@@ -99,7 +95,7 @@ public final class LegacyFutureAdapter implements Closeable {
     }
     final CompletableFuture<T> cf = new CompletableFuture<>();
     if (!potentiallyCompleteFuture(f, cf, 0, 0)) {
-      futureHolders.add(new FutureHolder<>(f, cf, Math.max(timeoutNanos, defaultTimeoutNanos)));
+      futureHolders.add(new FutureHolder<>(f, cf, timeoutNanos));
     }
     return cf;
   }
