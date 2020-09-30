@@ -9,14 +9,15 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.junit.jupiter.api.Test;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 
 public class TestEdge {
 
   @Test
   public void testFinishAfterClose() {
-    final SettableFuture<Boolean> settableFuture =
-        TestHelper.delayedSettableFuture(true, Duration.ofMillis(50));
+    final ListenableFuture<Boolean> settableFuture =
+        TestHelper.delayedFuture(true, Duration.ofMillis(50));
     final CompletableFuture<Boolean> adaptedFuture;
     try (LegacyFutureAdapter adapter2 = LegacyFutureAdapter.newBuilder().build()) {
       adapter2.start();

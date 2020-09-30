@@ -5,6 +5,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 
 public class TestHelper {
@@ -13,7 +14,7 @@ public class TestHelper {
     return r -> new Thread(r).start();
   }
 
-  public static <T> CompletableFuture<T> delayedFuture(@Nullable T elem, @Nonnull Duration delay) {
+  public static <T> CompletableFuture<T> delayedCompletableFuture(@Nullable T elem, @Nonnull Duration delay) {
     return CompletableFuture.supplyAsync(() -> {
       try {
         Thread.sleep(delay.toMillis());
@@ -23,10 +24,10 @@ public class TestHelper {
     }, threadPerTaskExecutor());
   }
 
-  public static <T> SettableFuture<T> delayedSettableFuture(@Nullable T elem,
+  public static <T> ListenableFuture<T> delayedFuture(@Nullable T elem,
       @Nonnull Duration delay) {
     final SettableFuture<T> f = SettableFuture.create();
-    delayedFuture(null, delay).thenRun(() -> f.set(elem));
+    delayedCompletableFuture(null, delay).thenRun(() -> f.set(elem));
     return f;
   }
 

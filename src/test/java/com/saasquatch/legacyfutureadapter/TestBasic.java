@@ -11,6 +11,7 @@ import java.util.concurrent.TimeoutException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 
 public class TestBasic {
@@ -31,8 +32,8 @@ public class TestBasic {
 
   @Test
   public void testBasic() throws Exception {
-    final SettableFuture<Boolean> settableFuture =
-        TestHelper.delayedSettableFuture(true, Duration.ofMillis(50));
+    final ListenableFuture<Boolean> settableFuture =
+        TestHelper.delayedFuture(true, Duration.ofMillis(50));
     final CompletableFuture<Boolean> adaptedFuture =
         legacyFutureAdapter.toCompletableFuture(settableFuture);
     assertThrows(TimeoutException.class, () -> adaptedFuture.get(30, TimeUnit.MILLISECONDS));
