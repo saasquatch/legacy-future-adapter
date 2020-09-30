@@ -4,7 +4,14 @@ import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import javax.annotation.Nonnull;
+import javax.annotation.concurrent.NotThreadSafe;
 
+/**
+ * Builder for {@link LegacyFutureAdapter}. The builder itself is NOT thread safe.
+ *
+ * @author sli
+ */
+@NotThreadSafe
 public final class LegacyFutureAdapterBuilder {
 
   private ThreadFactory eventLoopThreadFactory = null;

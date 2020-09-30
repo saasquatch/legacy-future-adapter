@@ -16,7 +16,16 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
+import javax.annotation.concurrent.ThreadSafe;
 
+/**
+ * An event loop based tool that waits for multiple {@link Future}s that do not support callbacks
+ * with a single thread.
+ *
+ * @see #newBuilder()
+ * @author sli
+ */
+@ThreadSafe
 public final class LegacyFutureAdapter implements Closeable {
 
   private Thread eventLoopThread;
@@ -33,6 +42,10 @@ public final class LegacyFutureAdapter implements Closeable {
     return new LegacyFutureAdapterBuilder();
   }
 
+  /**
+   * Start the event loop thread. This method has to be called before
+   * {@link #toCompletableFuture(Future)} can be used.
+   */
   public void start() {
     stateLock.writeLock().lock();
     try {
@@ -47,6 +60,9 @@ public final class LegacyFutureAdapter implements Closeable {
     }
   }
 
+  /**
+   * Stop the event loop thread.
+   */
   @Override
   public void close() {
     stateLock.writeLock().lock();
