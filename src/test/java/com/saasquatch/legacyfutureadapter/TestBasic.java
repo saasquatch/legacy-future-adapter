@@ -2,11 +2,8 @@ package com.saasquatch.legacyfutureadapter;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -18,12 +15,10 @@ import com.google.common.util.concurrent.SettableFuture;
 
 public class TestBasic {
 
-  private static ExecutorService threadPool;
   private static LegacyFutureAdapter legacyFutureAdapter;
 
   @BeforeAll
   public static void beforeAll() {
-    threadPool = Executors.newCachedThreadPool();
     legacyFutureAdapter = LegacyFutureAdapter.newBuilder()
         .setEventLoopThreadFactory(Executors.defaultThreadFactory()).build();
     legacyFutureAdapter.start();
@@ -31,21 +26,13 @@ public class TestBasic {
 
   @AfterAll
   public static void afterAll() {
-    threadPool.shutdown();
     legacyFutureAdapter.close();
   }
 
   @Test
   public void testBasic() throws Exception {
-    final SettableFuture<Boolean> settableFuture = SettableFuture.create();
-    CompletableFuture.runAsync(() -> {
-      try {
-        Thread.sleep(50);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-      settableFuture.set(true);
-    }, threadPool);
+    final SettableFuture<Boolean> settableFuture =
+        TestHelper.delayedSettableFuture(true, Duration.ofMillis(50));
     final CompletableFuture<Boolean> adaptedFuture =
         legacyFutureAdapter.toCompletableFuture(settableFuture);
     assertThrows(TimeoutException.class, () -> adaptedFuture.get(30, TimeUnit.MILLISECONDS));
@@ -58,42 +45,6 @@ public class TestBasic {
     final CompletableFuture<Boolean> adaptedFuture =
         legacyFutureAdapter.toCompletableFuture(neverFuture);
     assertThrows(TimeoutException.class, () -> adaptedFuture.get(100, TimeUnit.MILLISECONDS));
-  }
-
-  @Test
-  public void testFinishAfterClose() {
-    final SettableFuture<Boolean> settableFuture = SettableFuture.create();
-    CompletableFuture.runAsync(() -> {
-      try {
-        Thread.sleep(50);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-      settableFuture.set(true);
-    }, threadPool);
-    final CompletableFuture<Boolean> adaptedFuture;
-    try (LegacyFutureAdapter adapter2 = LegacyFutureAdapter.newBuilder().build()) {
-      adapter2.start();
-      adaptedFuture = adapter2.toCompletableFuture(settableFuture);
-    }
-    assertThrows(TimeoutException.class, () -> adaptedFuture.get(60, TimeUnit.MILLISECONDS));
-  }
-
-  @Test
-  public void testTimeout() {
-    try (LegacyFutureAdapter adapter2 = LegacyFutureAdapter.newBuilder().build()) {
-      adapter2.start();
-      final CompletableFuture<Object> cf =
-          adapter2.toCompletableFuture(SettableFuture.create(), Duration.ofMillis(100));
-      try {
-        cf.get(200, TimeUnit.MILLISECONDS);
-        fail();
-      } catch (ExecutionException e) {
-        assertTrue(e.getCause() instanceof TimeoutException);
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
-    }
   }
 
 }
