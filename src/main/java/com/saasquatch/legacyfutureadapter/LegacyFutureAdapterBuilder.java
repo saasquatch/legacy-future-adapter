@@ -18,8 +18,12 @@ public final class LegacyFutureAdapterBuilder {
 
   LegacyFutureAdapterBuilder() {}
 
+  /**
+   * Sets the {@link ThreadFactory} to be used for creating the event loop thread. The
+   * {@link ThreadFactory} will only be used to create one thread and one thread only.
+   */
   public LegacyFutureAdapterBuilder setEventLoopThreadFactory(
-      ThreadFactory eventLoopThreadFactory) {
+      @Nonnull ThreadFactory eventLoopThreadFactory) {
     this.eventLoopThreadFactory = Objects.requireNonNull(eventLoopThreadFactory);
     return this;
   }
