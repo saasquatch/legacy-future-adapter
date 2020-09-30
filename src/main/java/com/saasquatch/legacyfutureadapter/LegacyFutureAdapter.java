@@ -60,10 +60,22 @@ public final class LegacyFutureAdapter implements Closeable {
     }
   }
 
+  /**
+   * Convert the given {@link Future} into a {@link CompletableFuture} without a timeout. Only use
+   * this method if you are certain that the given {@link Future} will actually finish. If the
+   * future hangs forever, a reference of it will be kept in memory forever.
+   *
+   * @see #toCompletableFuture(Future, Duration)
+   */
   public <T> CompletableFuture<T> toCompletableFuture(@Nonnull Future<T> f) {
     return toCf(f, 0);
   }
 
+  /**
+   * Convert the given {@link Future} into a {@link CompletableFuture} with a timeout. If the given
+   * {@link Future} does not complete within the given timeout, then the result
+   * {@link CompletableFuture} will complete with a {@link TimeoutException}.
+   */
   public <T> CompletableFuture<T> toCompletableFuture(@Nonnull Future<T> f,
       @Nonnull Duration timeout) {
     final long nanos = timeout.toNanos();
