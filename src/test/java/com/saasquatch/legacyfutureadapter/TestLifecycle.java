@@ -22,4 +22,10 @@ public class TestLifecycle {
     }
   }
 
+  @Test
+  public void testCloseBeforeStart() {
+    final LegacyFutureAdapter legacyFutureAdapter = LegacyFutureAdapter.newBuilder().build();
+    assertDoesNotThrow(legacyFutureAdapter::close);
+  }
+
 }
