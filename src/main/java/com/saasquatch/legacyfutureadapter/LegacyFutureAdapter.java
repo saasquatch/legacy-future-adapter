@@ -74,7 +74,7 @@ public final class LegacyFutureAdapter implements Closeable {
   /**
    * Convert the given {@link Future} into a {@link CompletableFuture} with a timeout. If the given
    * {@link Future} does not complete within the given timeout, then the result
-   * {@link CompletableFuture} will complete with a {@link TimeoutException}.
+   * {@link CompletableFuture} will complete exceptionally with a {@link TimeoutException}.
    *
    * @see #toCompletableFuture(Future)
    */
