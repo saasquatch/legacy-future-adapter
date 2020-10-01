@@ -31,7 +31,7 @@ public final class LegacyFutureAdapter implements Closeable {
   private Thread eventLoopThread;
   private LegacyFutureAdapterState state = LegacyFutureAdapterState.CREATED;
   private final ReadWriteLock stateLock = new ReentrantReadWriteLock();
-  private final BlockingQueue<FutureHolder<?>> futureHolders = new LinkedBlockingQueue<>();
+  private final BlockingQueue<FutureHolder> futureHolders = new LinkedBlockingQueue<>();
   private final ThreadFactory eventLoopThreadFactory;
 
   LegacyFutureAdapter(ThreadFactory eventLoopThreadFactory) {
@@ -140,7 +140,7 @@ public final class LegacyFutureAdapter implements Closeable {
     }
     final CompletableFuture<T> cf = new CompletableFuture<>();
     if (!potentiallyCompleteFuture(f, cf, 0, 0)) {
-      futureHolders.add(new FutureHolder<>(f, cf, timeoutNanos));
+      futureHolders.add(new FutureHolder(f, cf, timeoutNanos));
     }
     return cf;
   }
@@ -152,7 +152,7 @@ public final class LegacyFutureAdapter implements Closeable {
   }
 
   private void doSingleLoop() {
-    final FutureHolder<?> futureHolder;
+    final FutureHolder futureHolder;
     try {
       futureHolder = futureHolders.take();
     } catch (InterruptedException e) {
@@ -188,7 +188,7 @@ public final class LegacyFutureAdapter implements Closeable {
     CREATED, STARTED, STOPPED,;
   }
 
-  private static class FutureHolder<T> {
+  private static class FutureHolder {
 
     final long startNanoTime = System.nanoTime();
     final Future<Object> f;
@@ -196,7 +196,7 @@ public final class LegacyFutureAdapter implements Closeable {
     final long timeoutNanos;
 
     @SuppressWarnings("unchecked")
-    FutureHolder(Future<T> f, CompletableFuture<T> cf, long timeoutNanos) {
+    FutureHolder(Future<?> f, CompletableFuture<?> cf, long timeoutNanos) {
       this.f = (Future<Object>) f;
       this.cf = (CompletableFuture<Object>) cf;
       this.timeoutNanos = timeoutNanos;
