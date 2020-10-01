@@ -8,7 +8,7 @@ import com.google.common.util.concurrent.SettableFuture;
 public class TestLifecycle {
 
   @Test
-  public void test() {
+  public void testClose() {
     try (LegacyFutureAdapter legacyFutureAdapter = LegacyFutureAdapter.newBuilder().build()) {
       assertThrows(IllegalStateException.class,
           () -> legacyFutureAdapter.toCompletableFuture(SettableFuture.create()));
@@ -26,6 +26,29 @@ public class TestLifecycle {
   public void testCloseBeforeStart() {
     final LegacyFutureAdapter legacyFutureAdapter = LegacyFutureAdapter.newBuilder().build();
     assertDoesNotThrow(legacyFutureAdapter::close);
+    assertThrows(IllegalStateException.class, legacyFutureAdapter::start);
+  }
+
+  @Test
+  public void testStopBeforeStart() {
+    try (LegacyFutureAdapter legacyFutureAdapter = LegacyFutureAdapter.newBuilder().build()) {
+      assertDoesNotThrow(legacyFutureAdapter::stop);
+      assertThrows(IllegalStateException.class, legacyFutureAdapter::start);
+      assertDoesNotThrow(legacyFutureAdapter::close);
+    }
+  }
+
+  @Test
+  public void testStop() {
+    try (LegacyFutureAdapter legacyFutureAdapter = LegacyFutureAdapter.newBuilder().build()) {
+      legacyFutureAdapter.start();
+      assertDoesNotThrow(legacyFutureAdapter::stop);
+      assertThrows(IllegalStateException.class,
+          () -> legacyFutureAdapter.toCompletableFuture(SettableFuture.create()));
+      assertDoesNotThrow(legacyFutureAdapter::stop);
+      assertDoesNotThrow(legacyFutureAdapter::close);
+      assertDoesNotThrow(legacyFutureAdapter::close);
+    }
   }
 
 }
