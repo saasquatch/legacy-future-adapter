@@ -2,6 +2,7 @@ package com.saasquatch.legacyfutureadapter;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -37,6 +38,8 @@ public class TestValidation {
         () -> legacyFutureAdapter.toCompletableFuture(SettableFuture.create(), null));
     assertThrows(IllegalArgumentException.class,
         () -> legacyFutureAdapter.toCompletableFuture(SettableFuture.create(), Duration.ZERO));
+    assertThrows(ArithmeticException.class, () -> legacyFutureAdapter
+        .toCompletableFuture(SettableFuture.create(), ChronoUnit.FOREVER.getDuration()));
   }
 
 }
