@@ -61,7 +61,19 @@ public final class LegacyFutureAdapter implements Closeable {
   }
 
   /**
-   * Stop the event loop thread.
+   * Stop accepting new {@link Future}s but keep the event loop thread running.
+   */
+  public void stop() {
+    stateLock.writeLock().lock();
+    try {
+      state = LegacyFutureAdapterState.STOPPED;
+    } finally {
+      stateLock.writeLock().unlock();
+    }
+  }
+
+  /**
+   * Stop accepting new {@link Future}s and stop the event loop thread.
    */
   @Override
   public void close() {
