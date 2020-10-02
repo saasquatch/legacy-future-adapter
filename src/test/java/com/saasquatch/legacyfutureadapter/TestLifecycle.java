@@ -17,6 +17,7 @@ public class TestLifecycle {
       assertDoesNotThrow(() -> legacyFutureAdapter.toCompletableFuture(SettableFuture.create()));
       legacyFutureAdapter.close();
       assertDoesNotThrow(legacyFutureAdapter::close);
+      assertThrows(IllegalStateException.class, legacyFutureAdapter::stop);
       assertThrows(IllegalStateException.class,
           () -> legacyFutureAdapter.toCompletableFuture(SettableFuture.create()));
     }

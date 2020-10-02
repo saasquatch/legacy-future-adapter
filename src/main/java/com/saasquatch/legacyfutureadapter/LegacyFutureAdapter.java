@@ -50,7 +50,7 @@ public final class LegacyFutureAdapter implements Closeable {
     stateLock.writeLock().lock();
     try {
       if (!state.canStart) {
-        throw new IllegalStateException("Invalid state: " + state);
+        throw invalidStateException(state);
       }
       state = LegacyFutureAdapterState.STARTED;
       eventLoopThread = eventLoopThreadFactory.newThread(this::doEventLoop);
@@ -66,6 +66,9 @@ public final class LegacyFutureAdapter implements Closeable {
   public void stop() {
     stateLock.writeLock().lock();
     try {
+      if (!state.canStop) {
+        throw invalidStateException(state);
+      }
       state = LegacyFutureAdapterState.STOPPED;
     } finally {
       stateLock.writeLock().unlock();
@@ -136,7 +139,7 @@ public final class LegacyFutureAdapter implements Closeable {
     Objects.requireNonNull(f);
     final LegacyFutureAdapterState currentState = getCurrentState();
     if (!currentState.acceptFutures) {
-      throw new IllegalStateException("Invalid state: " + currentState);
+      throw invalidStateException(currentState);
     }
     final CompletableFuture<T> cf = new CompletableFuture<>();
     if (!potentiallyCompleteFuture(f, cf, 0, 0)) {
@@ -184,20 +187,26 @@ public final class LegacyFutureAdapter implements Closeable {
     return false;
   }
 
+  private static RuntimeException invalidStateException(LegacyFutureAdapterState state) {
+    return new IllegalStateException("Invalid state: " + state);
+  }
+
   private static enum LegacyFutureAdapterState {
 
-    CREATED(true, false, false), STARTED(false, true, true), STOPPED(false, false,
-        true), CLOSED(false, false, false),;
+    CREATED(true, false, false, true), STARTED(false, true, true, true), STOPPED(false, false, true,
+        true), CLOSED(false, false, false, false),;
 
     private final boolean canStart;
     private final boolean acceptFutures;
     private final boolean runEventLoop;
+    private final boolean canStop;
 
-    private LegacyFutureAdapterState(boolean canStart, boolean acceptFutures,
-        boolean runEventLoop) {
+    private LegacyFutureAdapterState(boolean canStart, boolean acceptFutures, boolean runEventLoop,
+        boolean canStop) {
       this.canStart = canStart;
       this.acceptFutures = acceptFutures;
       this.runEventLoop = runEventLoop;
+      this.canStop = canStop;
     }
 
   }
