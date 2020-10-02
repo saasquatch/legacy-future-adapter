@@ -2,7 +2,11 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-Event loop based adapter for legacy Futures that do not support callbacks
+Event loop based adapter for legacy `Future`s that do not support callbacks
+
+## State Diagram
+
+![](https://i.imgur.com/BhyluYJ.jpg)
 
 ## License
 
