@@ -20,7 +20,7 @@ public class TestEdge {
     final ListenableFuture<Boolean> settableFuture =
         TestHelper.delayedFuture(true, Duration.ofMillis(50));
     final CompletableFuture<Boolean> adaptedFuture;
-    try (LegacyFutureAdapter adapter = LegacyFutureAdapter.newBuilder().build()) {
+    try (LegacyFutureAdapter adapter = LegacyFutureAdapter.create()) {
       adapter.start();
       adaptedFuture = adapter.toCompletableFuture(settableFuture);
     }
@@ -29,7 +29,7 @@ public class TestEdge {
 
   @Test
   public void testTimeout() {
-    try (LegacyFutureAdapter adapter = LegacyFutureAdapter.newBuilder().build()) {
+    try (LegacyFutureAdapter adapter = LegacyFutureAdapter.create()) {
       adapter.start();
       final CompletableFuture<Object> cf =
           adapter.toCompletableFuture(SettableFuture.create(), Duration.ofMillis(100));

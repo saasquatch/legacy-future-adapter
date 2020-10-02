@@ -38,8 +38,18 @@ public final class LegacyFutureAdapter implements Closeable {
     this.eventLoopThreadFactory = eventLoopThreadFactory;
   }
 
+  /**
+   * @return A new instance of {@link LegacyFutureAdapterBuilder}
+   */
   public static LegacyFutureAdapterBuilder newBuilder() {
     return new LegacyFutureAdapterBuilder();
+  }
+
+  /**
+   * Convenience method for {@code newBuilder().build()}
+   */
+  public static LegacyFutureAdapter create() {
+    return newBuilder().build();
   }
 
   /**
