@@ -61,7 +61,8 @@ public final class LegacyFutureAdapter implements Closeable {
   }
 
   /**
-   * Stop accepting new {@link Future}s but keep the event loop thread running.
+   * Stop accepting new {@link Future}s but keep the event loop thread running. Note that
+   * {@link #stop()} can only be called once and cannot be called after {@link #close()}.
    */
   public void stop() {
     stateLock.writeLock().lock();
@@ -76,7 +77,9 @@ public final class LegacyFutureAdapter implements Closeable {
   }
 
   /**
-   * Stop accepting new {@link Future}s and stop the event loop thread.
+   * Stop accepting new {@link Future}s and stop the event loop thread. To be compliant with
+   * {@link Closeable}, this method can be called multiple times and it has no effect after it's
+   * been called once.
    */
   @Override
   public void close() {
@@ -194,7 +197,7 @@ public final class LegacyFutureAdapter implements Closeable {
   private static enum LegacyFutureAdapterState {
 
     CREATED(true, false, false, true), STARTED(false, true, true, true), STOPPED(false, false, true,
-        true), CLOSED(false, false, false, false),;
+        false), CLOSED(false, false, false, false),;
 
     private final boolean canStart;
     private final boolean acceptFutures;
