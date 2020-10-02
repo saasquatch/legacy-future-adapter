@@ -49,7 +49,7 @@ public final class LegacyFutureAdapter implements Closeable {
   public void start() {
     stateLock.writeLock().lock();
     try {
-      if (state != LegacyFutureAdapterState.CREATED) {
+      if (!state.canStart) {
         throw new IllegalStateException("Invalid state: " + state);
       }
       state = LegacyFutureAdapterState.STARTED;
@@ -79,7 +79,7 @@ public final class LegacyFutureAdapter implements Closeable {
   public void close() {
     stateLock.writeLock().lock();
     try {
-      state = LegacyFutureAdapterState.STOPPED;
+      state = LegacyFutureAdapterState.CLOSED;
       if (eventLoopThread != null) {
         eventLoopThread.interrupt();
       }
@@ -135,7 +135,7 @@ public final class LegacyFutureAdapter implements Closeable {
   private <T> CompletableFuture<T> toCf(Future<T> f, long timeoutNanos) {
     Objects.requireNonNull(f);
     final LegacyFutureAdapterState currentState = getCurrentState();
-    if (currentState != LegacyFutureAdapterState.STARTED) {
+    if (!currentState.acceptFutures) {
       throw new IllegalStateException("Invalid state: " + currentState);
     }
     final CompletableFuture<T> cf = new CompletableFuture<>();
@@ -146,7 +146,7 @@ public final class LegacyFutureAdapter implements Closeable {
   }
 
   private void doEventLoop() {
-    while (getCurrentState() == LegacyFutureAdapterState.STARTED) {
+    while (getCurrentState().runEventLoop) {
       doSingleLoop();
     }
   }
@@ -185,7 +185,21 @@ public final class LegacyFutureAdapter implements Closeable {
   }
 
   private static enum LegacyFutureAdapterState {
-    CREATED, STARTED, STOPPED,;
+
+    CREATED(true, false, false), STARTED(false, true, true), STOPPED(false, false,
+        true), CLOSED(false, false, false),;
+
+    private final boolean canStart;
+    private final boolean acceptFutures;
+    private final boolean runEventLoop;
+
+    private LegacyFutureAdapterState(boolean canStart, boolean acceptFutures,
+        boolean runEventLoop) {
+      this.canStart = canStart;
+      this.acceptFutures = acceptFutures;
+      this.runEventLoop = runEventLoop;
+    }
+
   }
 
   private static class FutureHolder {
