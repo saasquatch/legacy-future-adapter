@@ -1,4 +1,7 @@
 # legacy-future-adapter
+
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
 Event loop based adapter for legacy Futures that do not support callbacks
 
 ## License
