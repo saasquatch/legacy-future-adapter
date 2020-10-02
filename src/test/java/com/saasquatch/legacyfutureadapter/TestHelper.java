@@ -14,7 +14,8 @@ public class TestHelper {
     return r -> new Thread(r).start();
   }
 
-  public static <T> CompletableFuture<T> delayedCompletableFuture(@Nullable T elem, @Nonnull Duration delay) {
+  public static <T> CompletableFuture<T> delayedCompletableFuture(@Nullable T elem,
+      @Nonnull Duration delay) {
     return CompletableFuture.supplyAsync(() -> {
       try {
         Thread.sleep(delay.toMillis());
@@ -24,8 +25,7 @@ public class TestHelper {
     }, threadPerTaskExecutor());
   }
 
-  public static <T> ListenableFuture<T> delayedFuture(@Nullable T elem,
-      @Nonnull Duration delay) {
+  public static <T> ListenableFuture<T> delayedFuture(@Nullable T elem, @Nonnull Duration delay) {
     final SettableFuture<T> f = SettableFuture.create();
     delayedCompletableFuture(null, delay).thenRun(() -> f.set(elem));
     return f;
