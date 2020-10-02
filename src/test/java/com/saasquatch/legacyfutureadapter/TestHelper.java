@@ -27,7 +27,13 @@ public class TestHelper {
 
   public static <T> ListenableFuture<T> delayedFuture(@Nullable T elem, @Nonnull Duration delay) {
     final SettableFuture<T> f = SettableFuture.create();
-    delayedCompletableFuture(null, delay).thenRun(() -> f.set(elem));
+    delayedCompletableFuture(null, delay).whenComplete((_ignored, t) -> {
+      if (t != null) {
+        f.setException(t);
+      } else {
+        f.set(elem);
+      }
+    });
     return f;
   }
 
