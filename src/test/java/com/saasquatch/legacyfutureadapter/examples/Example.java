@@ -42,7 +42,7 @@ public class Example {
     }
     /*
      * Once close() is called, the event loop will stop, and all the CompletableFutures that haven't
-     * completed yet will never complete.
+     * completed yet, including ones created with an explicit timeout, will never complete.
      */
   }
 

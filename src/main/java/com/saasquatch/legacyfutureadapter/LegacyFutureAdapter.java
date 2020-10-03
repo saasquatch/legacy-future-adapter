@@ -98,7 +98,8 @@ public final class LegacyFutureAdapter implements Closeable {
    * Stop accepting new {@link Future}s and stop the event loop thread. To be compliant with
    * {@link Closeable}, this method can be called multiple times and it has no effect after it's
    * been called once. Once {@link #close()} is called, {@link #toCompletableFuture(Future)} will no
-   * longer work, and all the unfinished {@link CompletableFuture}s will be left incomplete.
+   * longer work, and all the unfinished {@link CompletableFuture}s, even those with explicit
+   * timeouts, will be left incomplete.
    */
   @Override
   public void close() {
