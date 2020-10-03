@@ -1,15 +1,21 @@
 package com.saasquatch.legacyfutureadapter;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -66,6 +72,25 @@ public class TestBasic {
     final CompletableFuture<Object> cancelledFuture =
         legacyFutureAdapter.toCompletableFuture(Futures.immediateCancelledFuture());
     assertTrue(cancelledFuture.isCancelled());
+  }
+
+  @Test
+  public void testLotsOfFutures() {
+    final int[] ints = IntStream.range(0, 1024).toArray();
+    final List<Future<Integer>> futures = Arrays.stream(ints)
+        .mapToObj(i -> TestHelper.delayedFuture(i,
+            Duration.ofMillis(ThreadLocalRandom.current().nextInt(10, 1000))))
+        .collect(Collectors.toList());
+    final List<CompletableFuture<Integer>> cfs =
+        futures.stream().map(legacyFutureAdapter::toCompletableFuture).collect(Collectors.toList());
+    final int[] resultInts = cfs.stream().mapToInt(f -> {
+      try {
+        return f.get(2, TimeUnit.SECONDS);
+      } catch (InterruptedException | ExecutionException | TimeoutException e) {
+        throw new RuntimeException(e);
+      }
+    }).toArray();
+    assertArrayEquals(ints, resultInts);
   }
 
 }
