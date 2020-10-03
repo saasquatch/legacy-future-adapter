@@ -25,7 +25,10 @@ public class Example {
       final Future<Integer> f1 = delayedFuture(1, Duration.ofSeconds(1));
       // This "converts" the legacy Future into a CompletableFuture
       final CompletableFuture<Integer> cf1 = futureAdapter.toCompletableFuture(f1);
-      // Do whatever you want with it
+      /*
+       * Do whatever you want with it. But keep in mind that for subsequent long running tasks, you
+       * should provide your own Executor so it doesn't block the event loop thread.
+       */
       cf1.thenAccept(System.out::println);
       // Put another fake Future in it
       final Future<Integer> f2 = delayedFuture(2, Duration.ofSeconds(2));
@@ -48,7 +51,7 @@ public class Example {
     }
     /*
      * Once close() is called, the event loop will stop, and all the CompletableFutures that haven't
-     * completed yet will never complete.
+     * completed yet, including ones created with an explicit timeout, will never complete.
      */
   }
 
