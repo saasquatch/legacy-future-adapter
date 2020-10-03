@@ -145,6 +145,9 @@ public final class LegacyFutureAdapter implements Closeable {
     return toCf(f, nanos);
   }
 
+  /**
+   * @return all the {@link Future}s currently in the queue
+   */
   public List<Future<Object>> getQueuedFutures() {
     return futureHolders.stream().map(futureHolder -> futureHolder.f)
         .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
@@ -198,8 +201,9 @@ public final class LegacyFutureAdapter implements Closeable {
     }
   }
 
-  private static <T> boolean potentiallyCompleteFuture(Future<T> f, CompletableFuture<T> cf,
-      long elapsedNanos, long timeoutNanos) {
+  // visible for testing
+  static <T> boolean potentiallyCompleteFuture(@Nonnull Future<T> f,
+      @Nonnull CompletableFuture<T> cf, long elapsedNanos, long timeoutNanos) {
     if (f.isDone()) {
       try {
         return cf.complete(f.get());
