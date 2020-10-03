@@ -73,7 +73,9 @@ public final class LegacyFutureAdapter implements Closeable {
   /**
    * Stop accepting new {@link Future}s but keep the event loop thread running. Note that
    * {@link #stop()} can only be called once and can only be called after {@link #start()} and
-   * cannot be called after {@link #close()}.
+   * cannot be called after {@link #close()}. Once {@link #stop()} is called,
+   * {@link #toCompletableFuture(Future)} will no longer work, but since the event loop is kept
+   * running, all the incomplete {@link CompletableFuture}s will eventually complete.
    */
   public void stop() {
     stateLock.writeLock().lock();
@@ -90,7 +92,8 @@ public final class LegacyFutureAdapter implements Closeable {
   /**
    * Stop accepting new {@link Future}s and stop the event loop thread. To be compliant with
    * {@link Closeable}, this method can be called multiple times and it has no effect after it's
-   * been called once.
+   * been called once. Once {@link #close()} is called, {@link #toCompletableFuture(Future)} will no
+   * longer work, and all the unfinished {@link CompletableFuture}s will be left incomplete.
    */
   @Override
   public void close() {
@@ -123,7 +126,7 @@ public final class LegacyFutureAdapter implements Closeable {
    *
    * @param timeout The timeout to be applied. It has to be between 1 nanosecond and
    *        {@link Long#MAX_VALUE} nanoseconds.
-   *
+   * @throws ArithmeticException if the timeout is larger than {@link Long#MAX_VALUE} nanoseconds
    * @see #toCompletableFuture(Future)
    */
   public <T> CompletableFuture<T> toCompletableFuture(@Nonnull Future<T> f,
