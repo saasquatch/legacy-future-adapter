@@ -37,8 +37,7 @@ public class TestLifecycle {
   @Test
   public void testStopBeforeStart() {
     try (LegacyFutureAdapter legacyFutureAdapter = LegacyFutureAdapter.newBuilder().build()) {
-      assertDoesNotThrow(legacyFutureAdapter::stop);
-      assertThrows(IllegalStateException.class, legacyFutureAdapter::start);
+      assertThrows(IllegalStateException.class, legacyFutureAdapter::stop);
       assertDoesNotThrow(legacyFutureAdapter::close);
     }
   }

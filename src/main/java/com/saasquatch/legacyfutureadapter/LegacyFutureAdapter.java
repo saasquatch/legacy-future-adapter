@@ -206,8 +206,8 @@ public final class LegacyFutureAdapter implements Closeable {
 
   private static enum LegacyFutureAdapterState {
 
-    CREATED(true, false, false, true), STARTED(false, true, true, true), STOPPED(false, false, true,
-        false), CLOSED(false, false, false, false),;
+    CREATED(true, false, false, false), STARTED(false, true, true, true), STOPPED(false, false,
+        true, false), CLOSED(false, false, false, false),;
 
     private final boolean canStart;
     private final boolean acceptFutures;

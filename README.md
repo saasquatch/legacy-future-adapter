@@ -72,7 +72,7 @@ The example source code is available under package [`com.saasquatch.legacyfuture
 
 ### State diagram
 
-![](https://i.imgur.com/BhyluYJ.jpg)
+![](https://i.imgur.com/7Cooiup.jpg)
 
 ## License
 
