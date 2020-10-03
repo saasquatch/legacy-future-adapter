@@ -127,7 +127,7 @@ public final class LegacyFutureAdapter implements Closeable {
    */
   public <T> CompletableFuture<T> toCompletableFuture(@Nonnull Future<T> f,
       @Nonnull Duration timeout) {
-    final long nanos = timeout.toNanos();
+    final long nanos = timeout.toNanos(); // This will throw ArithmeticException for overflow
     if (nanos < 1) {
       throw new IllegalArgumentException("timeout has to be at least 1 nanosecond");
     }
@@ -155,6 +155,10 @@ public final class LegacyFutureAdapter implements Closeable {
       throw invalidStateException(currentState);
     }
     final CompletableFuture<T> cf = new CompletableFuture<>();
+    /*
+     * If the future is already completed, then return a completed CompletableFuture in the caller
+     * thread
+     */
     if (!potentiallyCompleteFuture(f, cf, 0, 0)) {
       futureHolders.add(new FutureHolder(f, cf, timeoutNanos));
     }
