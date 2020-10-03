@@ -130,7 +130,8 @@ public final class LegacyFutureAdapter implements Closeable {
    * {@link CompletableFuture} will complete exceptionally with a {@link TimeoutException}.
    *
    * @param timeout The timeout to be applied. It has to be between 1 nanosecond and
-   *        {@link Long#MAX_VALUE} nanoseconds.
+   *        {@link Long#MAX_VALUE} nanoseconds. The timeout stars counting when this method is
+   *        called.
    * @throws ArithmeticException if the timeout is larger than {@link Long#MAX_VALUE} nanoseconds
    * @see #toCompletableFuture(Future)
    */
