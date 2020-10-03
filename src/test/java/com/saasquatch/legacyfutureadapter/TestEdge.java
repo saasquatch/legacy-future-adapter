@@ -9,7 +9,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
@@ -50,16 +52,23 @@ public class TestEdge {
   public void testQueuedFuture() {
     final LegacyFutureAdapter adapter = LegacyFutureAdapter.newBuilder().build();
     adapter.start();
-    adapter.toCompletableFuture(TestHelper.delayedFuture(true, Duration.ofMillis(100)));
-    adapter.toCompletableFuture(TestHelper.delayedFuture(true, Duration.ofMillis(200)));
-    adapter.toCompletableFuture(TestHelper.delayedFuture(true, Duration.ofMillis(300)));
-    adapter.toCompletableFuture(TestHelper.delayedFuture(true, Duration.ofMillis(400)));
+    adapter.toCompletableFuture(TestHelper.delayedFuture(1, Duration.ofMillis(100)));
+    adapter.toCompletableFuture(TestHelper.delayedFuture(2, Duration.ofMillis(200)));
+    adapter.toCompletableFuture(TestHelper.delayedFuture(3, Duration.ofMillis(300)));
+    adapter.toCompletableFuture(TestHelper.delayedFuture(4, Duration.ofMillis(400)));
     try {
       Thread.sleep(210);
     } catch (InterruptedException e) {
     }
     adapter.close();
     assertEquals(2, adapter.getQueuedFutures().size());
+    assertEquals(ImmutableSet.of(3, 4), adapter.getQueuedFutures().stream().map(f -> {
+      try {
+        return f.get(1, TimeUnit.SECONDS);
+      } catch (InterruptedException | ExecutionException | TimeoutException e) {
+        throw new RuntimeException(e);
+      }
+    }).collect(Collectors.toSet()));
   }
 
   @Test
