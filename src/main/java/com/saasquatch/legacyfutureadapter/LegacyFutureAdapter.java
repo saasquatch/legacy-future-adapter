@@ -28,18 +28,21 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class LegacyFutureAdapter implements Closeable {
 
+  // mutable reference
   private Thread eventLoopThread;
+  // mutable reference
   private LegacyFutureAdapterState state = LegacyFutureAdapterState.CREATED;
   private final ReadWriteLock stateLock = new ReentrantReadWriteLock();
   private final BlockingQueue<FutureHolder> futureHolders = new LinkedBlockingQueue<>();
   private final ThreadFactory eventLoopThreadFactory;
 
-  LegacyFutureAdapter(ThreadFactory eventLoopThreadFactory) {
+  LegacyFutureAdapter(@Nonnull ThreadFactory eventLoopThreadFactory) {
     this.eventLoopThreadFactory = eventLoopThreadFactory;
   }
 
   /**
    * @return A new instance of {@link LegacyFutureAdapterBuilder}
+   * @see #create()
    */
   public static LegacyFutureAdapterBuilder newBuilder() {
     return new LegacyFutureAdapterBuilder();
@@ -47,6 +50,8 @@ public final class LegacyFutureAdapter implements Closeable {
 
   /**
    * Convenience method for {@code newBuilder().build()}
+   *
+   * @see #newBuilder()
    */
   public static LegacyFutureAdapter create() {
     return newBuilder().build();
@@ -232,7 +237,7 @@ public final class LegacyFutureAdapter implements Closeable {
 
   }
 
-  private static class FutureHolder {
+  private static final class FutureHolder {
 
     final long startNanoTime = System.nanoTime();
     final Future<Object> f;
