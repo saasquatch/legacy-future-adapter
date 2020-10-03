@@ -213,12 +213,12 @@ public final class LegacyFutureAdapter implements Closeable {
     CREATED(true, false, false, false), STARTED(false, true, true, true), STOPPED(false, false,
         true, false), CLOSED(false, false, false, false),;
 
-    private final boolean canStart;
-    private final boolean acceptFutures;
-    private final boolean runEventLoop;
-    private final boolean canStop;
+    final boolean canStart;
+    final boolean acceptFutures;
+    final boolean runEventLoop;
+    final boolean canStop;
 
-    private LegacyFutureAdapterState(boolean canStart, boolean acceptFutures, boolean runEventLoop,
+    LegacyFutureAdapterState(boolean canStart, boolean acceptFutures, boolean runEventLoop,
         boolean canStop) {
       this.canStart = canStart;
       this.acceptFutures = acceptFutures;
