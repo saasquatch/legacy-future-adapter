@@ -65,7 +65,7 @@ public class Example {
       } catch (InterruptedException e) {
       }
       return elem;
-    }, r -> new Thread().start());
+    }, r -> new Thread(r).start());
   }
 
 }
