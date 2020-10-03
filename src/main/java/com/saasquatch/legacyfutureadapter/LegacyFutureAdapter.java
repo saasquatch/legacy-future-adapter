@@ -72,7 +72,8 @@ public final class LegacyFutureAdapter implements Closeable {
 
   /**
    * Stop accepting new {@link Future}s but keep the event loop thread running. Note that
-   * {@link #stop()} can only be called once and cannot be called after {@link #close()}.
+   * {@link #stop()} can only be called once and can only be called after {@link #start()} and
+   * cannot be called after {@link #close()}.
    */
   public void stop() {
     stateLock.writeLock().lock();
