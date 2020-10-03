@@ -10,8 +10,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.junit.jupiter.api.Test;
+import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 public class TestEdge {
 
@@ -58,6 +60,30 @@ public class TestEdge {
     }
     adapter.close();
     assertEquals(2, adapter.getQueuedFutures().size());
+  }
+
+  @Test
+  public void testThread() {
+    final String callerThreadName = Thread.currentThread().getName();
+    final String eventLoopThreadName = "foo";
+    try (LegacyFutureAdapter adapter = LegacyFutureAdapter.newBuilder()
+        .setEventLoopThreadFactory(
+            new ThreadFactoryBuilder().setDaemon(true).setNameFormat(eventLoopThreadName).build())
+        .build()) {
+      adapter.start();
+      final CompletableFuture<Integer> cf1 =
+          adapter.toCompletableFuture(Futures.immediateFuture(1));
+      cf1.thenAccept(i -> {
+        assertEquals(1, i);
+        assertEquals(callerThreadName, Thread.currentThread().getName());
+      }).join();
+      final CompletableFuture<Integer> cf2 =
+          adapter.toCompletableFuture(TestHelper.delayedFuture(2, Duration.ofMillis(100)));
+      cf2.thenAccept(i -> {
+        assertEquals(2, i);
+        assertEquals(eventLoopThreadName, Thread.currentThread().getName());
+      });
+    }
   }
 
 }
