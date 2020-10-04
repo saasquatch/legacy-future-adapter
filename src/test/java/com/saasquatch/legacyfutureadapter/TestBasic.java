@@ -81,8 +81,8 @@ public class TestBasic {
         .mapToObj(i -> TestHelper.delayedFuture(i,
             Duration.ofMillis(ThreadLocalRandom.current().nextInt(10, 1000))))
         .collect(Collectors.toList());
-    final List<CompletableFuture<Integer>> cfs =
-        futures.stream().map(legacyFutureAdapter::toCompletableFuture).collect(Collectors.toList());
+    final List<CompletableFuture<Integer>> cfs = futures.parallelStream()
+        .map(legacyFutureAdapter::toCompletableFuture).collect(Collectors.toList());
     final int[] resultInts = cfs.stream().mapToInt(f -> {
       try {
         return f.get(2, TimeUnit.SECONDS);
