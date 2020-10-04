@@ -6,6 +6,14 @@ Event loop based adapter for legacy `Future`s that do not support callbacks
 
 ## Getting started
 
+### Introduction
+
+Before the introduction of `CompletableFuture`, Java didn't have a standard implementation of `Future` that supports callbacks. As a result, legacy libraries, including some of the Java's built-in classes, still return basic `Future`s that don't support callbacks. The common solution of adding callbacks to a legacy `Future` is to wait for it with a thread (one such example is [Guava's `JdkFutureAdapters`](https://github.com/google/guava/blob/c414be307af45d8197f3d8b2db256cb369f948af/guava/src/com/google/common/util/concurrent/JdkFutureAdapters.java)). The issue of this approach is that a new thread is needed for every `Future` instance. This library, however, uses a shared single event loop thread to wait for all the instances of `Future`s.
+
+### When not to use this library
+
+If the legacy libraries you are using already support callbacks, then you should convert those into `CompletableFuture`s yourself with a callback. Also, if the legacy `Future`s you are dealing with are few and far between, using this library will provide little to no benefit compared to waiting for those `Future`s with separate threads.
+
 ### Sample usage
 
 ```java
