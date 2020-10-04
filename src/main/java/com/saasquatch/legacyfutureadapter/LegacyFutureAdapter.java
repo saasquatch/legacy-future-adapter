@@ -223,26 +223,6 @@ public final class LegacyFutureAdapter implements Closeable {
     return new IllegalStateException("Invalid state: " + state);
   }
 
-  private static enum LegacyFutureAdapterState {
-
-    CREATED(true, false, false, false), STARTED(false, true, true, true), STOPPED(false, false,
-        true, false), CLOSED(false, false, false, false),;
-
-    final boolean canStart;
-    final boolean acceptFutures;
-    final boolean runEventLoop;
-    final boolean canStop;
-
-    LegacyFutureAdapterState(boolean canStart, boolean acceptFutures, boolean runEventLoop,
-        boolean canStop) {
-      this.canStart = canStart;
-      this.acceptFutures = acceptFutures;
-      this.runEventLoop = runEventLoop;
-      this.canStop = canStop;
-    }
-
-  }
-
   private static final class FutureHolder {
 
     final Future<Object> f;
