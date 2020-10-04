@@ -17,14 +17,14 @@ public class TestCompletingFuture {
     final ListenableFuture<Object> f = Futures.immediateFuture(1);
     {
       final CompletableFuture<Object> cf = new CompletableFuture<>();
-      potentiallyCompleteFuture(f, cf, 0, 0);
+      assertTrue(potentiallyCompleteFuture(f, cf, 0, 0));
       assertTrue(cf.isDone());
       assertFalse(cf.isCancelled());
       assertFalse(cf.isCompletedExceptionally());
     }
     {
       final CompletableFuture<Object> cf = new CompletableFuture<>();
-      potentiallyCompleteFuture(f, cf, 2, 1);
+      assertTrue(potentiallyCompleteFuture(f, cf, 2, 1));
       assertTrue(cf.isDone());
       assertFalse(cf.isCancelled());
       assertFalse(cf.isCompletedExceptionally());
@@ -36,14 +36,14 @@ public class TestCompletingFuture {
     final ListenableFuture<Object> f = Futures.immediateCancelledFuture();
     {
       final CompletableFuture<Object> cf = new CompletableFuture<>();
-      potentiallyCompleteFuture(f, cf, 0, 0);
+      assertTrue(potentiallyCompleteFuture(f, cf, 0, 0));
       assertTrue(cf.isDone());
       assertTrue(cf.isCancelled());
       assertTrue(cf.isCompletedExceptionally());
     }
     {
       final CompletableFuture<Object> cf = new CompletableFuture<>();
-      potentiallyCompleteFuture(f, cf, 2, 1);
+      assertTrue(potentiallyCompleteFuture(f, cf, 2, 1));
       assertTrue(cf.isDone());
       assertTrue(cf.isCancelled());
       assertTrue(cf.isCompletedExceptionally());
@@ -55,14 +55,14 @@ public class TestCompletingFuture {
     final ListenableFuture<Object> f = Futures.immediateFailedFuture(new IOException());
     {
       final CompletableFuture<Object> cf = new CompletableFuture<>();
-      potentiallyCompleteFuture(f, cf, 0, 0);
+      assertTrue(potentiallyCompleteFuture(f, cf, 0, 0));
       assertTrue(cf.isDone());
       assertFalse(cf.isCancelled());
       assertTrue(cf.isCompletedExceptionally());
     }
     {
       final CompletableFuture<Object> cf = new CompletableFuture<>();
-      potentiallyCompleteFuture(f, cf, 2, 1);
+      assertTrue(potentiallyCompleteFuture(f, cf, 2, 1));
       assertTrue(cf.isDone());
       assertFalse(cf.isCancelled());
       assertTrue(cf.isCompletedExceptionally());
@@ -74,14 +74,14 @@ public class TestCompletingFuture {
     final ListenableFuture<Object> f = SettableFuture.create();
     {
       final CompletableFuture<Object> cf = new CompletableFuture<>();
-      potentiallyCompleteFuture(f, cf, 0, 0);
+      assertFalse(potentiallyCompleteFuture(f, cf, 0, 0));
       assertFalse(cf.isDone());
       assertFalse(cf.isCancelled());
       assertFalse(cf.isCompletedExceptionally());
     }
     {
       final CompletableFuture<Object> cf = new CompletableFuture<>();
-      potentiallyCompleteFuture(f, cf, 2, 1);
+      assertTrue(potentiallyCompleteFuture(f, cf, 2, 1));
       assertTrue(cf.isDone());
       assertFalse(cf.isCancelled());
       assertTrue(cf.isCompletedExceptionally());
@@ -93,14 +93,14 @@ public class TestCompletingFuture {
     final ListenableFuture<Object> f = SettableFuture.create();
     {
       final CompletableFuture<Object> cf = new CompletableFuture<>();
-      potentiallyCompleteFuture(f, cf, 1, 2);
+      assertFalse(potentiallyCompleteFuture(f, cf, 1, 2));
       assertFalse(cf.isDone());
       assertFalse(cf.isCancelled());
       assertFalse(cf.isCompletedExceptionally());
     }
     {
       final CompletableFuture<Object> cf = new CompletableFuture<>();
-      potentiallyCompleteFuture(f, cf, Long.MAX_VALUE, 0);
+      assertFalse(potentiallyCompleteFuture(f, cf, Long.MAX_VALUE, 0));
       assertFalse(cf.isDone());
       assertFalse(cf.isCancelled());
       assertFalse(cf.isCompletedExceptionally());
@@ -108,7 +108,8 @@ public class TestCompletingFuture {
     {
       final CompletableFuture<Object> cf = new CompletableFuture<>();
       // nanoTime overflow
-      potentiallyCompleteFuture(f, cf, Long.MIN_VALUE + Integer.MAX_VALUE, Long.MAX_VALUE);
+      assertTrue(
+          potentiallyCompleteFuture(f, cf, Long.MIN_VALUE + Integer.MAX_VALUE, Long.MAX_VALUE));
       assertTrue(cf.isDone());
       assertFalse(cf.isCancelled());
       assertTrue(cf.isCompletedExceptionally());
