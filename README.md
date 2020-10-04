@@ -47,6 +47,20 @@ public class Example {
       final CompletableFuture<Integer> cf2 =
           futureAdapter.toCompletableFuture(f2, Duration.ofSeconds(1));
       cf2.thenAccept(System.out::println);
+      // Another example
+      final Future<Integer> f3 = delayedFuture(3, Duration.ofSeconds(3));
+      final CompletableFuture<Integer> cf3 = futureAdapter.toCompletableFuture(f3);
+      /*
+       * NEVER DO THIS!!! If you need to run long blocking tasks, please provide your own executor.
+       * Otherwise, this will block the event loop thread and in turn block other CompletableFutures
+       * from completing.
+       */
+      cf3.thenRun(() -> {
+        try {
+          Thread.sleep(1000); // BAD!!!!!!
+        } catch (InterruptedException e) {
+        }
+      });
       /*
        * stop() can be optionally called before close(). Calling stop will block the
        * LegacyFutureAdapter from accepting new Futures, but the event loop will continue running
