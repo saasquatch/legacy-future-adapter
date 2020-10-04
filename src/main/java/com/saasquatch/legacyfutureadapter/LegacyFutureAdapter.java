@@ -174,7 +174,7 @@ public final class LegacyFutureAdapter implements Closeable {
      * thread
      */
     if (!potentiallyCompleteFuture(f, cf, 0, 0)) {
-      futureHolders.add(new FutureHolder(f, cf, timeoutNanos));
+      futureHolders.add(new FutureHolder(f, cf, System.nanoTime(), timeoutNanos));
     }
     return cf;
   }
@@ -245,15 +245,16 @@ public final class LegacyFutureAdapter implements Closeable {
 
   private static final class FutureHolder {
 
-    final long startNanoTime = System.nanoTime();
     final Future<Object> f;
     final CompletableFuture<Object> cf;
+    final long startNanoTime;
     final long timeoutNanos;
 
     @SuppressWarnings("unchecked")
-    FutureHolder(Future<?> f, CompletableFuture<?> cf, long timeoutNanos) {
+    FutureHolder(Future<?> f, CompletableFuture<?> cf, long startNanoTime, long timeoutNanos) {
       this.f = (Future<Object>) f;
       this.cf = (CompletableFuture<Object>) cf;
+      this.startNanoTime = startNanoTime;
       this.timeoutNanos = timeoutNanos;
     }
 
