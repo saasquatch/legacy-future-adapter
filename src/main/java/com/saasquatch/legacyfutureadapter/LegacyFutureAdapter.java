@@ -213,7 +213,7 @@ public final class LegacyFutureAdapter implements Closeable {
         // This covers CancellationException
         return cf.completeExceptionally(e);
       }
-    } else if (timeoutNanos > 0 && elapsedNanos > timeoutNanos) {
+    } else if (timeoutNanos > 0 && elapsedNanos - timeoutNanos > 0) {
       return cf.completeExceptionally(new TimeoutException());
     }
     return false;

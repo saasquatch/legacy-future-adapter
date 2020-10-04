@@ -88,4 +88,31 @@ public class TestCompletingFuture {
     }
   }
 
+  @Test
+  public void testTimeout() throws Exception {
+    final ListenableFuture<Object> f = SettableFuture.create();
+    {
+      final CompletableFuture<Object> cf = new CompletableFuture<>();
+      potentiallyCompleteFuture(f, cf, 1, 2);
+      assertFalse(cf.isDone());
+      assertFalse(cf.isCancelled());
+      assertFalse(cf.isCompletedExceptionally());
+    }
+    {
+      final CompletableFuture<Object> cf = new CompletableFuture<>();
+      potentiallyCompleteFuture(f, cf, Long.MAX_VALUE, 0);
+      assertFalse(cf.isDone());
+      assertFalse(cf.isCancelled());
+      assertFalse(cf.isCompletedExceptionally());
+    }
+    {
+      final CompletableFuture<Object> cf = new CompletableFuture<>();
+      // nanoTime overflow
+      potentiallyCompleteFuture(f, cf, Long.MIN_VALUE + Integer.MAX_VALUE, Long.MAX_VALUE);
+      assertTrue(cf.isDone());
+      assertFalse(cf.isCancelled());
+      assertTrue(cf.isCompletedExceptionally());
+    }
+  }
+
 }
