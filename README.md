@@ -52,7 +52,7 @@ public class Example {
       final CompletableFuture<Integer> cf3 = futureAdapter.toCompletableFuture(f3);
       /*
        * NEVER DO THIS!!! If you need to run long blocking tasks, please provide your own executor.
-       * Otherwise, this will block the event loop thread and in turn block other CompletableFutures
+       * Otherwise, this can block the event loop thread and in turn block other CompletableFutures
        * from completing.
        */
       cf3.thenRun(() -> {
