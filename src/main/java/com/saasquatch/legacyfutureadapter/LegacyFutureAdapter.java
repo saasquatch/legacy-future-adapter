@@ -16,6 +16,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -29,15 +30,17 @@ import javax.annotation.concurrent.ThreadSafe;
 public final class LegacyFutureAdapter implements Closeable {
 
   // mutable reference
+  @Nullable
   private Thread eventLoopThread;
   // mutable reference
+  @Nonnull
   private LegacyFutureAdapterState state = LegacyFutureAdapterState.CREATED;
   private final ReadWriteLock stateLock = new ReentrantReadWriteLock();
   private final BlockingQueue<FutureHolder> futureHolders = new LinkedBlockingQueue<>();
   private final ThreadFactory eventLoopThreadFactory;
 
   LegacyFutureAdapter(@Nonnull ThreadFactory eventLoopThreadFactory) {
-    this.eventLoopThreadFactory = eventLoopThreadFactory;
+    this.eventLoopThreadFactory = Objects.requireNonNull(eventLoopThreadFactory);
   }
 
   /**
@@ -162,7 +165,7 @@ public final class LegacyFutureAdapter implements Closeable {
     }
   }
 
-  private <T> CompletableFuture<T> toCf(Future<T> f, long timeoutNanos) {
+  private <T> CompletableFuture<T> toCf(@Nonnull Future<T> f, long timeoutNanos) {
     Objects.requireNonNull(f);
     final LegacyFutureAdapterState currentState = getCurrentState();
     if (!currentState.acceptFutures) {
@@ -219,7 +222,7 @@ public final class LegacyFutureAdapter implements Closeable {
     return false;
   }
 
-  private static RuntimeException invalidStateException(LegacyFutureAdapterState state) {
+  private static RuntimeException invalidStateException(@Nonnull LegacyFutureAdapterState state) {
     return new IllegalStateException("Invalid state: " + state);
   }
 
@@ -231,7 +234,8 @@ public final class LegacyFutureAdapter implements Closeable {
     final long timeoutNanos;
 
     @SuppressWarnings("unchecked")
-    FutureHolder(Future<?> f, CompletableFuture<?> cf, long startNanoTime, long timeoutNanos) {
+    FutureHolder(@Nonnull Future<?> f, @Nonnull CompletableFuture<?> cf, long startNanoTime,
+        long timeoutNanos) {
       this.f = (Future<Object>) f;
       this.cf = (CompletableFuture<Object>) cf;
       this.startNanoTime = startNanoTime;
